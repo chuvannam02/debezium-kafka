@@ -1,0 +1,16 @@
+version: '3'
+# docker run -it --rm --name zookeeper -p 2181:2181 -p 2888:2888 -p 3888:3888 quay.io/debezium/zookeeper:2.7
+# docker run -it --rm --name kafka -p 9092:9092 --link zookeeper:zookeeper quay.io/debezium/kafka:2.7
+# docker run -it --rm --name mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=debezium -e MYSQL_USER=mysqluser -e MYSQL_PASSWORD=mysqlpw quay.io/debezium/example-mysql:2.7
+# docker run -it --rm --name connect -p 8083:8083 -e GROUP_ID=1 -e CONFIG_STORAGE_TOPIC=my_connect_configs -e OFFSET_STORAGE_TOPIC=my_connect_offsets -e STATUS_STORAGE_TOPIC=my_connect_status quay.io/debezium/connect:2.7
+# Tôi thêm ui kafka nhìn cho xịn xò
+# docker run -it --rm --name kafka-ui -p 9090:8080 --link kafka:kafka -e KAFKA_CLUSTERS_0_NAME=local -e KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092 provectuslabs/kafka-ui:latest
+
+services:
+    zookeeper:
+        image: quay.io/debezium/zookeeper:2.7
+        container_name: member_zookeeper_container
+        ports:
+            - 2181:2181
+            - 2888:2888
+            - 3888:3888

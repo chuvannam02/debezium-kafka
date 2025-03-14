@@ -1,0 +1,42 @@
+{
+  "name": "postgres-sink-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.jdbc.JdbcSinkConnector",
+    "tasks.max": "1",
+    "connection.url": "jdbc:postgresql://host.docker.internal:5432/test_inventory",
+    "connection.username": "postgres",
+    "connection.password": "Huykenzj994",
+    "connection.driver": "org.postgresql.Driver",
+
+    "topics": "dbserver1.inventory.customers,dbserver1.inventory.products,dbserver1.inventory.products_on_hand,dbserver1.inventory.orders,dbserver1.inventory.addresses,dbserver1.inventory.geom",
+    "table.include.list": "inventory.customers,inventory.products,inventory.products_on_hand,inventory.orders,inventory.addresses,inventory.geom",
+    "table.name.format": "${topic}",
+    "table.key.columns": "inventory.orders:order_number",
+
+    "transforms": "unwrap, flatten",
+    "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+    "transforms.unwrap.drop.tombstones": "false",
+    "transforms.flatten.type": "org.apache.kafka.connect.transforms.Flatten$Value",
+    "transforms.flatten.delimiter": "_",
+
+    "auto.create": "true",
+    "auto.evolve": "true",
+    "schema.evolution": "basic",
+    "ddl.handling.mode": "apply",
+
+    "insert.mode": "upsert",
+    "primary.key.mode": "record_key",
+
+    "db.timezone": "UTC",
+    "delete.enabled": "false",
+
+    "connection.attempts": "5",
+    "connection.backoff.ms": "5000",
+
+    "datatype.mapping": "ENUM=STRING",
+    "column.propagate.source.type": "true",
+
+    "consumer.override.auto.offset.reset": "earliest",
+    "key.converter.schemas.enable": "true"
+  }
+}

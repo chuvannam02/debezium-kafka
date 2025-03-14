@@ -1,0 +1,112 @@
+version: '3'
+services:
+    zookeeper:
+            image: quay.io/debezium/zookeeper:2.7
+            container_name: demo_zookeeper
+            ports:
+                - 2181:2181
+                - 2888:2888
+                - 3888:3888
+            volumes:
+                - zookeeper_data:/var/lib/zookeeper
+                - zookeeper_logs:/var/log/zookeeper
+            restart: always
+
+    kafka:
+        image: quay.io/debezium/kafka:2.7
+        container_name: demo_kafka
+        ports:
+            - 9092:9092
+        depends_on:
+            - zookeeper
+        environment:
+            - ZOOKEEPER_CONNECT=zookeeper:2181
+            - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://demo_kafka:9092
+        volumes:
+            - kafka_data:/kafka/data
+            - kafka_logs:/kafka/logs
+        restart: always
+
+    kafka-ui:
+        image: provectuslabs/kafka-ui:latest
+        container_name: demo_kafka-ui
+        environment:
+            - KAFKA_CLUSTERS_0_NAME=local
+            - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=demo_kafka:9092
+        ports:
+            - 9089:8080
+        depends_on:
+            - kafka
+
+    mysql:
+        image: quay.io/debezium/example-mysql:${DEBEZIUM_VERSION}
+        container_name: demo_mysql
+        ports:
+            - 3307:3306
+        environment:
+            - MYSQL_ROOT_PASSWORD=debezium
+            - MYSQL_USER=mysqluser
+            - MYSQL_PASSWORD=mysqlpw
+        volumes:
+            - mysql_data:/var/lib/mysql
+        restart: always
+
+    #    mysql:
+    #        image: mysql:latest
+    #        container_name: demo_mysql
+    #        ports:
+    #            - 3306:3306
+    #        environment:
+    #            - MYSQL_ROOT_PASSWORD=debezium
+    #            - MYSQL_USER=mysqluser
+    #            - MYSQL_PASSWORD=mysqlpw
+    #            - MYSQL_DATABASE=inventory
+
+    postgresql:
+        image: postgres:latest
+        container_name: demo_postgresql
+        environment:
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+            - POSTGRES_DB=inventory
+        ports:
+            - 5432:5432
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        restart: always
+
+    redis:
+        image: redis:7.0
+        container_name: demo_redis_container
+        ports:
+            - 6379:6379
+        restart: always
+
+    connect:
+        image: quay.io/debezium/connect:${DEBEZIUM_VERSION}
+        container_name: demo_connect
+        ports:
+            - 8083:8083
+        depends_on:
+            - kafka
+            - mysql
+        environment:
+            - BOOTSTRAP_SERVERS=kafka:9092
+            - GROUP_ID=1
+            - CONFIG_STORAGE_TOPIC=my_connect_configs
+            - OFFSET_STORAGE_TOPIC=my_connect_offsets
+            - STATUS_STORAGE_TOPIC=my_connect_statuses
+        volumes:
+            - kafka_connect_data:/kafka/connect
+            - kafka_connect_logs:/kafka/logs
+        restart: always
+
+volumes:
+    kafka_data:
+    kafka_logs:
+    mysql_data:
+    postgres_data:
+    kafka_connect_data:
+    kafka_connect_logs:
+    zookeeper_data:
+    zookeeper_logs:
